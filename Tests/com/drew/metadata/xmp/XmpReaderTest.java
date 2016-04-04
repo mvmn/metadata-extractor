@@ -44,8 +44,9 @@ public class XmpReaderTest
     {
         Metadata metadata = new Metadata();
         List<byte[]> jpegSegments = new ArrayList<byte[]>();
+        byte[] fileContents = FileUtil.readBytes("Tests/Data/withXmpAndIptc.jpg.app1.1");
         jpegSegments.add(FileUtil.readBytes("Tests/Data/withXmpAndIptc.jpg.app1.1"));
-        new XmpReader().readJpegSegments(jpegSegments, metadata, JpegSegmentType.APP1);
+        new XmpReader().readJpegSegments(fileContents.length, jpegSegments, metadata, JpegSegmentType.APP1);
 
         Collection<XmpDirectory> xmpDirectories = metadata.getDirectoriesOfType(XmpDirectory.class);
 

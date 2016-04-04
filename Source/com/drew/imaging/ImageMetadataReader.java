@@ -84,7 +84,7 @@ public class ImageMetadataReader
      * @throws ImageProcessingException if the file type is unknown, or for general processing errors.
      */
     @NotNull
-    public static Metadata readMetadata(@NotNull final InputStream inputStream) throws ImageProcessingException, IOException
+    public static Metadata readMetadata(long fileSize, @NotNull final InputStream inputStream) throws ImageProcessingException, IOException
     {
         BufferedInputStream bufferedInputStream = inputStream instanceof BufferedInputStream
             ? (BufferedInputStream)inputStream
@@ -93,7 +93,7 @@ public class ImageMetadataReader
         FileType fileType = FileTypeDetector.detectFileType(bufferedInputStream);
 
         if (fileType == FileType.Jpeg)
-            return JpegMetadataReader.readMetadata(bufferedInputStream);
+            return JpegMetadataReader.readMetadata(fileSize, bufferedInputStream);
 
         if (fileType == FileType.Tiff ||
             fileType == FileType.Arw ||
@@ -101,10 +101,10 @@ public class ImageMetadataReader
             fileType == FileType.Nef ||
             fileType == FileType.Orf ||
             fileType == FileType.Rw2)
-            return TiffMetadataReader.readMetadata(bufferedInputStream);
+            return TiffMetadataReader.readMetadata(fileSize, bufferedInputStream);
 
         if (fileType == FileType.Psd)
-            return PsdMetadataReader.readMetadata(bufferedInputStream);
+            return PsdMetadataReader.readMetadata(fileSize, bufferedInputStream);
 
         if (fileType == FileType.Png)
             return PngMetadataReader.readMetadata(bufferedInputStream);
@@ -122,10 +122,10 @@ public class ImageMetadataReader
             return PcxMetadataReader.readMetadata(bufferedInputStream);
 
         if (fileType == FileType.Riff)
-            return WebpMetadataReader.readMetadata(bufferedInputStream);
+            return WebpMetadataReader.readMetadata(fileSize, bufferedInputStream);
 
         if (fileType == FileType.Raf)
-            return RafMetadataReader.readMetadata(bufferedInputStream);
+            return RafMetadataReader.readMetadata(fileSize, bufferedInputStream);
 
         throw new ImageProcessingException("File format is not supported");
     }
@@ -143,7 +143,7 @@ public class ImageMetadataReader
         InputStream inputStream = new FileInputStream(file);
         Metadata metadata;
         try {
-            metadata = readMetadata(inputStream);
+            metadata = readMetadata(file.length(), inputStream);
         } finally {
             inputStream.close();
         }

@@ -69,12 +69,12 @@ public class WebpRiffHandler implements RiffHandler
             || fourCC.equals("XMP ");
     }
 
-    public void processChunk(@NotNull String fourCC, @NotNull byte[] payload)
+    public void processChunk(long fileSize, @NotNull String fourCC, @NotNull byte[] payload)
     {
 //        System.out.println("Chunk " + fourCC + " " + payload.length + " bytes");
 
         if (fourCC.equals("EXIF")) {
-            new ExifReader().extract(new ByteArrayReader(payload), _metadata);
+            new ExifReader().extract(fileSize, new ByteArrayReader(payload), _metadata);
         } else if (fourCC.equals("ICCP")) {
             new IccReader().extract(new ByteArrayReader(payload), _metadata);
         } else if (fourCC.equals("XMP ")) {

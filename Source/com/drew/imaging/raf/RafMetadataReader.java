@@ -37,7 +37,7 @@ import java.io.InputStream;
 public class RafMetadataReader
 {
     @NotNull
-    public static Metadata readMetadata(@NotNull InputStream inputStream) throws JpegProcessingException, IOException
+    public static Metadata readMetadata(long fileSize, @NotNull InputStream inputStream) throws JpegProcessingException, IOException
     {
         if (!inputStream.markSupported())
             throw new IOException("Stream must support mark/reset");
@@ -62,7 +62,7 @@ public class RafMetadataReader
             }
         }
 
-        return JpegMetadataReader.readMetadata(inputStream);
+        return JpegMetadataReader.readMetadata(fileSize, inputStream);
     }
 
     private RafMetadataReader() throws Exception

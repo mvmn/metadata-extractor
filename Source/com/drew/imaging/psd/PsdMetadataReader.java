@@ -42,7 +42,7 @@ public class PsdMetadataReader
         Metadata metadata = new Metadata();
         InputStream stream = new FileInputStream(file);
         try {
-            new PsdReader().extract(new StreamReader(stream), metadata);
+            new PsdReader().extract(file.length(), new StreamReader(stream), metadata);
         } finally {
             stream.close();
         }
@@ -51,10 +51,10 @@ public class PsdMetadataReader
     }
 
     @NotNull
-    public static Metadata readMetadata(@NotNull InputStream inputStream)
+    public static Metadata readMetadata(long fileSize, @NotNull InputStream inputStream)
     {
         Metadata metadata = new Metadata();
-        new PsdReader().extract(new StreamReader(inputStream), metadata);
+        new PsdReader().extract(fileSize, new StreamReader(inputStream), metadata);
         return metadata;
     }
 }

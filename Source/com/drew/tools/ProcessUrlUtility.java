@@ -63,7 +63,7 @@ public class ProcessUrlUtility
         // Read metadata
         final Metadata metadata;
         try {
-            metadata = ImageMetadataReader.readMetadata(in);
+            metadata = ImageMetadataReader.readMetadata(url.getFile().length(), in);
         } catch (ImageProcessingException e) {
             // this is an error in the Jpeg segment structure.  we're looking for bad handling of
             // metadata segments.  in this case, we didn't even get a segment.

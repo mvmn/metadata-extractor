@@ -41,7 +41,7 @@ public class JpegCommentReader implements JpegSegmentMetadataReader
         return Collections.singletonList(JpegSegmentType.COM);
     }
 
-    public void readJpegSegments(@NotNull Iterable<byte[]> segments, @NotNull Metadata metadata, @NotNull JpegSegmentType segmentType)
+    public void readJpegSegments(long fileSize, @NotNull Iterable<byte[]> segments, @NotNull Metadata metadata, @NotNull JpegSegmentType segmentType)
     {
         for (byte[] segmentBytes : segments) {
             JpegCommentDirectory directory = new JpegCommentDirectory();

@@ -56,7 +56,7 @@ public class IccReader implements JpegSegmentMetadataReader, MetadataReader
         return Collections.singletonList(JpegSegmentType.APP2);
     }
 
-    public void readJpegSegments(@NotNull Iterable<byte[]> segments, @NotNull Metadata metadata, @NotNull JpegSegmentType segmentType)
+    public void readJpegSegments(long fileSizeBytes, @NotNull Iterable<byte[]> segments, @NotNull Metadata metadata, @NotNull JpegSegmentType segmentType)
     {
         final int preambleLength = JPEG_SEGMENT_PREAMBLE.length();
 

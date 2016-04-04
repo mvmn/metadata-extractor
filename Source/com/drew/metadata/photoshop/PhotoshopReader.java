@@ -54,7 +54,7 @@ public class PhotoshopReader implements JpegSegmentMetadataReader
         return Collections.singletonList(JpegSegmentType.APPD);
     }
 
-    public void readJpegSegments(@NotNull Iterable<byte[]> segments, @NotNull Metadata metadata, @NotNull JpegSegmentType segmentType)
+    public void readJpegSegments(long fileSize, @NotNull Iterable<byte[]> segments, @NotNull Metadata metadata, @NotNull JpegSegmentType segmentType)
     {
         final int preambleLength = JPEG_SEGMENT_PREAMBLE.length();
 
@@ -63,14 +63,14 @@ public class PhotoshopReader implements JpegSegmentMetadataReader
             if (segmentBytes.length < preambleLength + 1 || !JPEG_SEGMENT_PREAMBLE.equals(new String(segmentBytes, 0, preambleLength)))
                 continue;
 
-            extract(
+            extract(fileSize, 
                 new SequentialByteArrayReader(segmentBytes, preambleLength + 1),
                 segmentBytes.length - preambleLength - 1,
                 metadata);
         }
     }
 
-    public void extract(@NotNull final SequentialReader reader, int length, @NotNull final Metadata metadata)
+    public void extract(long fileSize, @NotNull final SequentialReader reader, int length, @NotNull final Metadata metadata)
     {
         PhotoshopDirectory directory = new PhotoshopDirectory();
         metadata.addDirectory(directory);
@@ -129,7 +129,7 @@ public class PhotoshopReader implements JpegSegmentMetadataReader
                     else if (tagType == PhotoshopDirectory.TAG_ICC_PROFILE_BYTES)
                         new IccReader().extract(new ByteArrayReader(tagBytes), metadata);
                     else if (tagType == PhotoshopDirectory.TAG_EXIF_DATA_1 || tagType == PhotoshopDirectory.TAG_EXIF_DATA_3)
-                        new ExifReader().extract(new ByteArrayReader(tagBytes), metadata);
+                        new ExifReader().extract(fileSize, new ByteArrayReader(tagBytes), metadata);
                     else if (tagType == PhotoshopDirectory.TAG_XMP_DATA)
                         new XmpReader().extract(tagBytes, metadata);
                     else

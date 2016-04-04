@@ -47,7 +47,7 @@ public class DuckyReader implements JpegSegmentMetadataReader
         return Collections.singletonList(JpegSegmentType.APPC);
     }
 
-    public void readJpegSegments(@NotNull Iterable<byte[]> segments, @NotNull Metadata metadata, @NotNull JpegSegmentType segmentType)
+    public void readJpegSegments(long fileSize, @NotNull Iterable<byte[]> segments, @NotNull Metadata metadata, @NotNull JpegSegmentType segmentType)
     {
         final int preambleLength = JPEG_SEGMENT_PREAMBLE.length();
 

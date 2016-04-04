@@ -63,7 +63,7 @@ public class ExifReader implements JpegSegmentMetadataReader
         return Collections.singletonList(JpegSegmentType.APP1);
     }
 
-    public void readJpegSegments(@NotNull final Iterable<byte[]> segments, @NotNull final Metadata metadata, @NotNull final JpegSegmentType segmentType)
+    public void readJpegSegments(long fileSize, @NotNull final Iterable<byte[]> segments, @NotNull final Metadata metadata, @NotNull final JpegSegmentType segmentType)
     {
         assert(segmentType == JpegSegmentType.APP1);
 
@@ -71,22 +71,22 @@ public class ExifReader implements JpegSegmentMetadataReader
             // Filter any segments containing unexpected preambles
             if (segmentBytes.length < JPEG_SEGMENT_PREAMBLE.length() || !new String(segmentBytes, 0, JPEG_SEGMENT_PREAMBLE.length()).equals(JPEG_SEGMENT_PREAMBLE))
                 continue;
-            extract(new ByteArrayReader(segmentBytes), metadata, JPEG_SEGMENT_PREAMBLE.length());
+            extract(fileSize, new ByteArrayReader(segmentBytes), metadata, JPEG_SEGMENT_PREAMBLE.length());
         }
     }
 
     /** Reads TIFF formatted Exif data from start of the specified {@link RandomAccessReader}. */
-    public void extract(@NotNull final RandomAccessReader reader, @NotNull final Metadata metadata)
+    public void extract(long fileSize, @NotNull final RandomAccessReader reader, @NotNull final Metadata metadata)
     {
-        extract(reader, metadata, 0);
+        extract(fileSize, reader, metadata, 0);
     }
 
     /** Reads TIFF formatted Exif data a specified offset within a {@link RandomAccessReader}. */
-    public void extract(@NotNull final RandomAccessReader reader, @NotNull final Metadata metadata, int readerOffset)
+    public void extract(long fileSize, @NotNull final RandomAccessReader reader, @NotNull final Metadata metadata, int readerOffset)
     {
         try {
             // Read the TIFF-formatted Exif data
-            new TiffReader().processTiff(
+            new TiffReader().processTiff(fileSize,
                 reader,
                 new ExifTiffHandler(metadata, _storeThumbnailBytes),
                 readerOffset

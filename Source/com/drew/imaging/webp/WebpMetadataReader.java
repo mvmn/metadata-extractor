@@ -43,7 +43,7 @@ public class WebpMetadataReader
         InputStream inputStream = new FileInputStream(file);
         Metadata metadata;
         try {
-            metadata = readMetadata(inputStream);
+			metadata = readMetadata(file.length(), inputStream);
         } finally {
             inputStream.close();
         }
@@ -52,10 +52,10 @@ public class WebpMetadataReader
     }
 
     @NotNull
-    public static Metadata readMetadata(@NotNull InputStream inputStream) throws IOException, RiffProcessingException
+    public static Metadata readMetadata(long fileSize, @NotNull InputStream inputStream) throws IOException, RiffProcessingException
     {
         Metadata metadata = new Metadata();
-        new RiffReader().processRiff(new StreamReader(inputStream), new WebpRiffHandler(metadata));
+        new RiffReader().processRiff(fileSize, new StreamReader(inputStream), new WebpRiffHandler(metadata));
         return metadata;
     }
 }

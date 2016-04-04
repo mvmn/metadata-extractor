@@ -67,17 +67,17 @@ public class JpegMetadataReader
     );
 
     @NotNull
-    public static Metadata readMetadata(@NotNull InputStream inputStream, @Nullable Iterable<JpegSegmentMetadataReader> readers) throws JpegProcessingException, IOException
+    public static Metadata readMetadata(long fileSize, @NotNull InputStream inputStream, @Nullable Iterable<JpegSegmentMetadataReader> readers) throws JpegProcessingException, IOException
     {
         Metadata metadata = new Metadata();
-        process(metadata, inputStream, readers);
+        process(fileSize, metadata, inputStream, readers);
         return metadata;
     }
 
     @NotNull
-    public static Metadata readMetadata(@NotNull InputStream inputStream) throws JpegProcessingException, IOException
+    public static Metadata readMetadata(long fileSize, @NotNull InputStream inputStream) throws JpegProcessingException, IOException
     {
-        return readMetadata(inputStream, null);
+        return readMetadata(fileSize, inputStream, null);
     }
 
     @NotNull
@@ -86,7 +86,7 @@ public class JpegMetadataReader
         InputStream inputStream = new FileInputStream(file);
         Metadata metadata;
         try {
-            metadata = readMetadata(inputStream, readers);
+            metadata = readMetadata(file.length(), inputStream, readers);
         } finally {
             inputStream.close();
         }
@@ -100,12 +100,12 @@ public class JpegMetadataReader
         return readMetadata(file, null);
     }
 
-    public static void process(@NotNull Metadata metadata, @NotNull InputStream inputStream) throws JpegProcessingException, IOException
+    public static void process(long fileSize, @NotNull Metadata metadata, @NotNull InputStream inputStream) throws JpegProcessingException, IOException
     {
-        process(metadata, inputStream, null);
+        process(fileSize, metadata, inputStream, null);
     }
 
-    public static void process(@NotNull Metadata metadata, @NotNull InputStream inputStream, @Nullable Iterable<JpegSegmentMetadataReader> readers) throws JpegProcessingException, IOException
+    public static void process(long fileSize, @NotNull Metadata metadata, @NotNull InputStream inputStream, @Nullable Iterable<JpegSegmentMetadataReader> readers) throws JpegProcessingException, IOException
     {
         if (readers == null)
             readers = ALL_READERS;
@@ -119,15 +119,15 @@ public class JpegMetadataReader
 
         JpegSegmentData segmentData = JpegSegmentReader.readSegments(new StreamReader(inputStream), segmentTypes);
 
-        processJpegSegmentData(metadata, readers, segmentData);
+        processJpegSegmentData(fileSize, metadata, readers, segmentData);
     }
 
-    public static void processJpegSegmentData(Metadata metadata, Iterable<JpegSegmentMetadataReader> readers, JpegSegmentData segmentData)
+    public static void processJpegSegmentData(long fileSize, Metadata metadata, Iterable<JpegSegmentMetadataReader> readers, JpegSegmentData segmentData)
     {
         // Pass the appropriate byte arrays to each reader.
         for (JpegSegmentMetadataReader reader : readers) {
             for (JpegSegmentType segmentType : reader.getSegmentTypes()) {
-                reader.readJpegSegments(segmentData.getSegments(segmentType), metadata, segmentType);
+                reader.readJpegSegments(fileSize, segmentData.getSegments(segmentType), metadata, segmentType);
             }
         }
     }

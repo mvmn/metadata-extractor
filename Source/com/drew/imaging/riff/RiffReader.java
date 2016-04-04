@@ -47,7 +47,7 @@ public class RiffReader
      *                                 ignored or recovered from
      * @throws IOException an error occurred while accessing the required data
      */
-    public void processRiff(@NotNull final SequentialReader reader,
+    public void processRiff(long fileSizeBytes, @NotNull final SequentialReader reader,
                             @NotNull final RiffHandler handler) throws RiffProcessingException, IOException
     {
         // RIFF files are always little-endian
@@ -84,7 +84,7 @@ public class RiffReader
 
             if (handler.shouldAcceptChunk(chunkFourCC)) {
                 // TODO is it feasible to avoid copying the chunk here, and to pass the sequential reader to the handler?
-                handler.processChunk(chunkFourCC, reader.getBytes(chunkSize));
+                handler.processChunk(fileSizeBytes, chunkFourCC, reader.getBytes(chunkSize));
             } else {
                 reader.skip(chunkSize);
             }

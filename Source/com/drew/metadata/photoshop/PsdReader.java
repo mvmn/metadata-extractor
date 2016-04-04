@@ -34,7 +34,7 @@ import java.io.IOException;
  */
 public class PsdReader
 {
-    public void extract(@NotNull final SequentialReader reader, @NotNull final Metadata metadata)
+    public void extract(long fileSize, @NotNull final SequentialReader reader, @NotNull final Metadata metadata)
     {
         PsdHeaderDirectory directory = new PsdHeaderDirectory();
         metadata.addDirectory(directory);
@@ -109,7 +109,7 @@ public class PsdReader
 
             assert(sectionLength <= Integer.MAX_VALUE);
 
-            new PhotoshopReader().extract(reader, (int)sectionLength, metadata);
+            new PhotoshopReader().extract(fileSize, reader, (int)sectionLength, metadata);
         } catch (IOException e) {
             // ignore
         }

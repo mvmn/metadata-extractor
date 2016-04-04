@@ -45,10 +45,13 @@ public class TiffReader
      *                                 ignored or recovered from
      * @throws IOException an error occurred while accessing the required data
      */
-    public void processTiff(@NotNull final RandomAccessReader reader,
+    public void processTiff(long fileSize, @NotNull final RandomAccessReader reader,
                             @NotNull final TiffHandler handler,
                             final int tiffHeaderOffset) throws TiffProcessingException, IOException
     {
+		if (fileSize < 0) {
+			fileSize = reader.getLength();
+		}
         // This must be either "MM" or "II".
         short byteOrderIdentifier = reader.getInt16(tiffHeaderOffset);
 
@@ -68,14 +71,14 @@ public class TiffReader
 
         // David Ekholm sent a digital camera image that has this problem
         // TODO getLength should be avoided as it causes RandomAccessStreamReader to read to the end of the stream
-        if (firstIfdOffset >= reader.getLength() - 1) {
+        if (firstIfdOffset >= fileSize - 1) {
             handler.warn("First IFD offset is beyond the end of the TIFF data segment -- trying default offset");
             // First directory normally starts immediately after the offset bytes, so try that
             firstIfdOffset = tiffHeaderOffset + 2 + 2 + 4;
         }
 
         Set<Integer> processedIfdOffsets = new HashSet<Integer>();
-        processIfd(handler, reader, processedIfdOffsets, firstIfdOffset, tiffHeaderOffset);
+        processIfd(fileSize, handler, reader, processedIfdOffsets, firstIfdOffset, tiffHeaderOffset);
 
         handler.completed(reader, tiffHeaderOffset);
     }
@@ -103,7 +106,7 @@ public class TiffReader
      * @param tiffHeaderOffset the offset within <code>reader</code> at which the TIFF header starts
      * @throws IOException an error occurred while accessing the required data
      */
-    public static void processIfd(@NotNull final TiffHandler handler,
+    public static void processIfd(long fileSize, @NotNull final TiffHandler handler,
                                   @NotNull final RandomAccessReader reader,
                                   @NotNull final Set<Integer> processedIfdOffsets,
                                   final int ifdOffset,
@@ -119,7 +122,7 @@ public class TiffReader
             // remember that we've visited this directory so that we don't visit it again later
             processedIfdOffsets.add(ifdOffset);
 
-            if (ifdOffset >= reader.getLength() || ifdOffset < 0) {
+            if (ifdOffset >= fileSize || ifdOffset < 0) {
                 handler.error("Ignored IFD marked to start outside data segment");
                 return;
             }
@@ -138,7 +141,7 @@ public class TiffReader
             }
 
             int dirLength = (2 + (12 * dirTagCount) + 4);
-            if (dirLength + ifdOffset > reader.getLength()) {
+            if (dirLength + ifdOffset > fileSize) {
                 handler.error("Illegally sized IFD");
                 return;
             }
@@ -187,7 +190,7 @@ public class TiffReader
                 if (byteCount > 4) {
                     // If it's bigger than 4 bytes, the dir entry contains an offset.
                     final int offsetVal = reader.getInt32(tagOffset + 8);
-                    if (offsetVal + byteCount > reader.getLength()) {
+                    if (offsetVal + byteCount > fileSize) {
                         // Bogus pointer offset and / or byteCount value
                         handler.error("Illegal TIFF tag pointer offset");
                         continue;
@@ -198,14 +201,14 @@ public class TiffReader
                     tagValueOffset = tagOffset + 8;
                 }
 
-                if (tagValueOffset < 0 || tagValueOffset > reader.getLength()) {
+                if (tagValueOffset < 0 || tagValueOffset > fileSize) {
                     handler.error("Illegal TIFF tag pointer offset");
                     continue;
                 }
 
                 // Check that this tag isn't going to allocate outside the bounds of the data array.
                 // This addresses an uncommon OutOfMemoryError.
-                if (byteCount < 0 || tagValueOffset + byteCount > reader.getLength()) {
+                if (byteCount < 0 || tagValueOffset + byteCount > fileSize) {
                     handler.error("Illegal number of bytes for TIFF tag data: " + byteCount);
                     continue;
                 }
@@ -217,13 +220,13 @@ public class TiffReader
                         if (handler.tryEnterSubIfd(tagId)) {
                             isIfdPointer = true;
                             int subDirOffset = tiffHeaderOffset + reader.getInt32(tagValueOffset + i * 4);
-                            processIfd(handler, reader, processedIfdOffsets, subDirOffset, tiffHeaderOffset);
+                            processIfd(fileSize, handler, reader, processedIfdOffsets, subDirOffset, tiffHeaderOffset);
                         }
                     }
                 }
 
                 // If it wasn't an IFD pointer, allow custom tag processing to occur
-                if (!isIfdPointer && !handler.customProcessTag(tagValueOffset, processedIfdOffsets, tiffHeaderOffset, reader, tagId, byteCount)) {
+                if (!isIfdPointer && !handler.customProcessTag(fileSize, tagValueOffset, processedIfdOffsets, tiffHeaderOffset, reader, tagId, byteCount)) {
                     // If no custom processing occurred, process the tag in the standard fashion
                     processTag(handler, tagId, tagValueOffset, componentCount, formatCode, reader);
                 }
@@ -234,7 +237,7 @@ public class TiffReader
             int nextIfdOffset = reader.getInt32(finalTagOffset);
             if (nextIfdOffset != 0) {
                 nextIfdOffset += tiffHeaderOffset;
-                if (nextIfdOffset >= reader.getLength()) {
+                if (nextIfdOffset >= fileSize) {
                     // Last 4 bytes of IFD reference another IFD with an address that is out of bounds
                     // Note this could have been caused by jhead 1.3 cropping too much
                     return;
@@ -245,7 +248,7 @@ public class TiffReader
                 }
 
                 if (handler.hasFollowerIfd()) {
-                    processIfd(handler, reader, processedIfdOffsets, nextIfdOffset, tiffHeaderOffset);
+                    processIfd(fileSize, handler, reader, processedIfdOffsets, nextIfdOffset, tiffHeaderOffset);
                 }
             }
         } finally {

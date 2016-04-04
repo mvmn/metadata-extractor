@@ -44,7 +44,7 @@ public class PsdReaderTest
         Metadata metadata = new Metadata();
         InputStream stream = new FileInputStream(new File(file));
         try {
-            new PsdReader().extract(new StreamReader(stream), metadata);
+            new PsdReader().extract(new File(file).length(), new StreamReader(stream), metadata);
         } catch (Exception e) {
             stream.close();
             throw e;

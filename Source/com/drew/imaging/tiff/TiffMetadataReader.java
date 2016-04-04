@@ -46,7 +46,7 @@ public class TiffMetadataReader
 
         try {
             ExifTiffHandler handler = new ExifTiffHandler(metadata, false);
-            new TiffReader().processTiff(new RandomAccessFileReader(randomAccessFile), handler, 0);
+            new TiffReader().processTiff(file.length(), new RandomAccessFileReader(randomAccessFile), handler, 0);
         } finally {
             randomAccessFile.close();
         }
@@ -57,7 +57,7 @@ public class TiffMetadataReader
     }
 
     @NotNull
-    public static Metadata readMetadata(@NotNull InputStream inputStream) throws IOException, TiffProcessingException
+    public static Metadata readMetadata(long fileSize, @NotNull InputStream inputStream) throws IOException, TiffProcessingException
     {
         // TIFF processing requires random access, as directories can be scattered throughout the byte sequence.
         // InputStream does not support seeking backwards, so we wrap it with RandomAccessStreamReader, which
@@ -65,7 +65,7 @@ public class TiffMetadataReader
 
         Metadata metadata = new Metadata();
         ExifTiffHandler handler = new ExifTiffHandler(metadata, false);
-        new TiffReader().processTiff(new RandomAccessStreamReader(inputStream), handler, 0);
+        new TiffReader().processTiff(fileSize, new RandomAccessStreamReader(inputStream), handler, 0);
         return metadata;
     }
 }

@@ -61,5 +61,5 @@ public interface RiffHandler
      * @param fourCC the four character code of the chunk
      * @param payload they payload of the chunk as a byte array
      */
-    void processChunk(@NotNull String fourCC, @NotNull byte[] payload);
+    void processChunk(long fileSize, @NotNull String fourCC, @NotNull byte[] payload);
 }

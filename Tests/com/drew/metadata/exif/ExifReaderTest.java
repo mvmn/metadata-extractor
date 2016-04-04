@@ -46,7 +46,7 @@ public class ExifReaderTest
     {
         Metadata metadata = new Metadata();
         byte[] bytes = FileUtil.readBytes(filePath);
-        new ExifReader().extract(new ByteArrayReader(bytes), metadata, ExifReader.JPEG_SEGMENT_PREAMBLE.length());
+        new ExifReader().extract(bytes.length, new ByteArrayReader(bytes), metadata, ExifReader.JPEG_SEGMENT_PREAMBLE.length());
         return metadata;
     }
 
@@ -62,7 +62,7 @@ public class ExifReaderTest
     public void testExtractWithNullDataThrows() throws Exception
     {
         try{
-            new ExifReader().readJpegSegments(null, new Metadata(), JpegSegmentType.APP1);
+            new ExifReader().readJpegSegments(0, null, new Metadata(), JpegSegmentType.APP1);
             fail("Exception expected");
         } catch (NullPointerException npe) {
             // passed
@@ -88,7 +88,7 @@ public class ExifReaderTest
         Metadata metadata = new Metadata();
         ArrayList<byte[]> segments = new ArrayList<byte[]>();
         segments.add(badExifData);
-        new ExifReader().readJpegSegments(segments, metadata, JpegSegmentType.APP1);
+		new ExifReader().readJpegSegments(badExifData.length, segments, metadata, JpegSegmentType.APP1);
         assertEquals(0, metadata.getDirectoryCount());
         assertFalse(metadata.hasErrors());
     }
